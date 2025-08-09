@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AGROSERVICIO Y FERRETERIA BUJAIDA</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 500px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #000000;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        input, button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #5cb85c;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #4cae4c;
+        }
+        .ticket-box {
+            border-top: 2px dashed #ccc;
+            margin-top: 20px;
+            padding-top: 20px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+        }
+        .ticket-box h3 {
+            text-align: center;
+            margin-top: 0;
+        }
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        hr {
+            border: none;
+            border-top: 1px solid #eee;
+            margin: 10px 0;
+        }
+        #total-pagar {
+            font-size: 18px;
+            font-weight: bold;
+            color: #000000;
+        }
+        #imprimir-btn {
+            background-color: #0275d8;
+            margin-top: 20px;
+        }
+        #imprimir-btn:hover {
+            background-color: #025aa5;
+        }
+        #cliente-nombre {
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        /* Estilos para impresión */
+        @media print {
+            body {
+                visibility: hidden;
+            }
+            .print-area {
+                visibility: visible;
+                display: block !important;
+                position: absolute;
+                left: 0;
+                top: 0;
+            }
+            .print-copy {
+                border: 1px solid black;
+                margin-bottom: 20px;
+                padding: 10px;
+            }
+            .no-print {
+                display: none;
+            }
+            h1, label, input, button {
+                display: none;
+            }
+            .ticket-box {
+                border-top: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container no-print">
+    <h1>AGROSERVICIO Y FERRETERIA BUJAIDA</h1>
+    
+    <label for="cliente">Nombre del Cliente:</label>
+    <input type="text" id="cliente" placeholder="Escriba el nombre del cliente...">
+
+    <label for="producto">Producto:</label>
+    <input type="text" id="producto" list="listaProductos" placeholder="Buscar producto...">
+    
+    <label for="cantidad">Cantidad:</label>
+    <input type="number" id="cantidad" value="1" min="1">
+    
+    <button onclick="agregarProducto()">Añadir a la venta</button>
+    
+    <div class="ticket-box">
+        <h3>Detalle de la Venta</h3>
+        <p id="cliente-nombre-placeholder" style="display:none;"></p>
+        <div id="lista-productos-vendidos">
+            </div>
+        <hr>
+        <div class="item-row">
+            <strong>Total:</strong>
+            <strong id="total-pagar">$0.00</strong>
+        </div>
+    </div>
+    
+    <button id="imprimir-btn" onclick="imprimirTickets()">Imprimir 2 Copias 🖨️</button>
+</div>
+
+<div class="print-area" style="display:none;"></div>
+
+<datalist id="listaProductos">
+    <option value="qq DE MAICILLO $30.00">
+    <option value="@ MAICILLO $8.00">
+    <option value="1/2 @ MAICILLO $4.00">
+    <option value="BOTELLA DE MIEL $6.00">
+    <option value="1/2 BOTELLA DE MIEL $4.00">
+    <option value="LAZO BUEYERO $1.50">
+    <option value="LAZO BUEYERO DE COLOR $1.50">
+    <option value="LAZO DE COLORES PEQUEÑOS $1.00">
+    <option value="VALDE DE LECHE $7.50">
+    <option value="1/2 BOTELLA DE LECHE $3.00">
+    <option value="1/2 DE 5 BOTELLAS DE LECHE $9.00">
+    <option value="1/2 DE 10 BOTELLAS DE LECHE $14.00">
+    <option value="BARRIL PLASTICO CERRADO $39.00">
+    <option value="BARRIL PLASTICO ABIERTO $38.00">
+    <option value="MITAD DE BARRIL $22.00">
+    <option value="BARRIL METALICO $19.00">
+    <option value="COMEDERO INDIVIDUAL PARA GANADO $60.00">
+    <option value="COMEDERO DOBLE PARA GANADO $165.00">
+    <option value="CUBETAS PLASTICAS PEQUEÑAS $3.00">
+    <option value="CUBETAS PLASTICAS GRANDES $4.00">
+    <option value="SACOS GRANDES $0.75">
+    <option value="SACOS PEQUEÑOS $0.45">
+    <option value="LINGAS 30 VARAS $10.00">
+    <option value="LADRILLO DE OBRA $0.38">
+    <option value="GRANZA $5.50">
+    <option value="PULIMENTO AMARILLO $24.00">
+    <option value="ARENA METRO $20">
+    </option>
+</datalist>
+
+<script>
+    const productos = {
+        "qq DE MAICILLO $30.00": 30.00,
+        "@ MAICILLO $8.00": 8.00,
+        "1/2 @ MAICILLO $4.00": 4.00,
+        "BOTELLA DE MIEL $6.00": 6.00,
+        "1/2 BOTELLA DE MIEL $4.00": 4.00,
+        "LAZO BUEYERO $1.50": 1.50,
+        "LAZO BUEYERO DE COLOR $1.50": 1.50,
+        "LAZO DE COLORES PEQUEÑOS $1.00": 1.00,
+        "VALDE DE LECHE $7.50": 7.50,
+        "1/2 BOTELLA DE LECHE $3.00": 3.00,
+        "1/2 DE 5 BOTELLAS DE LECHE $9.00": 9.00,
+        "1/2 DE 10 BOTELLAS DE LECHE $14.00": 14.00,
+        "BARRIL PLASTICO CERRADO $39.00": 39.00,
+        "BARRIL PLASTICO ABIERTO $38.00": 38.00,
+        "MITAD DE BARRIL $22.00": 22.00,
+        "BARRIL METALICO $19.00": 19.00,
+        "COMEDERO INDIVIDUAL PARA GANADO $60.00": 60.00,
+        "COMEDERO DOBLE PARA GANADO $165.00": 165.00,
+        "CUBETAS PLASTICAS PEQUEÑAS $3.00": 3.00,
+        "CUBETAS PLASTICAS GRANDES $4.00": 4.00,
+        "SACOS GRANDES $0.75": 0.75,
+        "SACOS PEQUEÑOS $0.45": 0.45,
+        "LINGAS 30 VARAS $10.00": 10.00,
+        "LADRILLO DE OBRA $0.38": 0.38,
+        "GRANZA $5.50": 5.50,
+        "PULIMENTO AMARILLO $24.00": 24.00,
+        "ARENA METRO $20": 20.00
+    };
+
+    let totalVenta = 0;
+    const listaProductosVendidos = document.getElementById('lista-productos-vendidos');
+    const totalPagar = document.getElementById('total-pagar');
+    const clienteInput = document.getElementById('cliente');
+    const clienteNombrePlaceholder = document.getElementById('cliente-nombre-placeholder');
+    
+    function agregarProducto() {
+        const nombreProducto = document.getElementById('producto').value;
+        const cantidad = parseInt(document.getElementById('cantidad').value);
+
+        if (productos[nombreProducto] && cantidad > 0) {
+            const precioUnitario = productos[nombreProducto];
+            const precioTotalProducto = precioUnitario * cantidad;
+
+            const div = document.createElement('div');
+            div.className = 'item-row';
+            div.innerHTML = `
+                <span>${nombreProducto} (${cantidad} x $${precioUnitario.toFixed(2)})</span>
+                <span>$${precioTotalProducto.toFixed(2)}</span>
+            `;
+            listaProductosVendidos.appendChild(div);
+
+            totalVenta += precioTotalProducto;
+            totalPagar.textContent = `$${totalVenta.toFixed(2)}`;
+
+            document.getElementById('producto').value = '';
+            document.getElementById('cantidad').value = '1';
+
+        } else {
+            alert('❌ Producto no encontrado o cantidad inválida.');
+        }
+    }
+
+    function imprimirTickets() {
+        // Prepara el contenido del ticket
+        const ticketContent = document.querySelector('.ticket-box').innerHTML;
+        const clienteNombre = clienteInput.value || "Público en General";
+        
+        // Crea la copia para el cliente
+        const copiaCliente = `
+            <div class="print-copy">
+                <h3 style="text-align: center;">COPIA CLIENTE</h3>
+                <p style="text-align: center;">** Gracias por su compra **</p>
+                <hr>
+                <p><strong>Cliente:</strong> ${clienteNombre}</p>
+                ${ticketContent}
+            </div>
+        `;
+        
+        // Crea la copia para CAJA
+        const copiaCaja = `
+            <div class="print-copy">
+                <h3 style="text-align: center;">COPIA CAJA</h3>
+                <p style="text-align: center;">** Registro Interno **</p>
+                <hr>
+                <p><strong>Cliente:</strong> ${clienteNombre}</p>
+                ${ticketContent}
+            </div>
+        `;
+        
+        // Agrega las copias al área de impresión
+        const printArea = document.querySelector('.print-area');
+        printArea.innerHTML = copiaCliente + copiaCaja;
+        
+        // Muestra el área de impresión y luego imprime
+        printArea.style.display = 'block';
+        window.print();
+        
+        // Oculta el área de impresión después de imprimir
+        printArea.style.display = 'none';
+    }
+</script>
+
+</body>
+</html>
