@@ -128,6 +128,20 @@
             }
         }
     </style>
+    <link rel="manifest" href="manifest.json">
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(registration => {
+                        console.log('Service Worker registrado con éxito:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('Fallo el registro del Service Worker:', error);
+                    });
+            });
+        }
+    </script>
 </head>
 <body>
 
@@ -195,7 +209,7 @@
     <option value="LADRILLO DE OBRA $0.38">
     <option value="GRANZA $5.50">
     <option value="ARENA METRO $20">
-    <option value="ARENA 1/2 METRO $10">  
+    <option value="ARENA 1/2 METRO $10"> 
     <option value="ARENA CUBETA $0.65">
     <option value="PACAS $4.25">
     <option value="ONZA PIPIAN $0.50">
@@ -307,7 +321,7 @@
         "LADRILLO DE OBRA $0.38": 0.38,
         "GRANZA $5.50": 5.50,
         "ARENA METRO $20": 20.00,
-        "ARENA 1/2 METRO $10": 10.00,
+        "ARENA 1/2 METRO $10": 10.00, 
         "ARENA CUBETA $0.65": 0.65,
         "PACAS $4.25": 4.25,
         "ONZA PIPIAN $0.50": 0.50,
