@@ -86,6 +86,11 @@
             margin-bottom: 10px;
         }
 
+        .switch-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
         /* Estilos para impresión */
         @media print {
             body {
@@ -112,6 +117,15 @@
             .ticket-box {
                 border-top: none;
             }
+            .ticket-simple {
+                font-family: 'Courier New', Courier, monospace;
+                font-size: 12px;
+                padding: 0;
+                margin: 0;
+            }
+            .ticket-simple h3, .ticket-simple hr {
+                display: none;
+            }
         }
     </style>
 </head>
@@ -120,6 +134,11 @@
 <div class="container no-print">
     <h1>AGROSERVICIO Y FERRETERIA BUJAIDA</h1>
     
+    <div class="switch-container">
+        <label for="modo-venta">Modo de Venta:</label>
+        <button id="modo-venta" onclick="cambiarModoVenta()">PAPELITOS</button>
+    </div>
+
     <label for="cliente">Nombre del Cliente:</label>
     <input type="text" id="cliente" placeholder="Escriba el nombre del cliente...">
 
@@ -135,7 +154,7 @@
         <h3>Detalle de la Venta</h3>
         <p id="cliente-nombre-placeholder" style="display:none;"></p>
         <div id="lista-productos-vendidos">
-            </div>
+        </div>
         <hr>
         <div class="item-row">
             <strong>Total:</strong>
@@ -143,12 +162,12 @@
         </div>
     </div>
     
-    <button id="imprimir-btn" onclick="imprimirTickets()">Imprimir 2 Copias 🖨️</button>
+    <button id="imprimir-btn" onclick="imprimirTickets()">Imprimir Ticket 🖨️</button>
 </div>
 
 <div class="print-area" style="display:none;"></div>
 
-<datalist id="listaProductos">
+<datalist id="listaProductosPapelitos">
     <option value="qq DE MAICILLO $33.50">
     <option value="@ MAICILLO $8.50">
     <option value="MAICILLO $1.00">
@@ -210,12 +229,58 @@
     <option value="PECHERA MEDIANA $3.00">
     <option value="PECHERA GRANDE $4.50">
     <option value="COLLAR GRANDE $3.50">
-    </option>
+</datalist>
+
+<datalist id="listaProductosBebidasPaletas">
+    <option value="POWER 1L $1.25">
+    <option value="GATORADE 1L $1.25">
+    <option value="LIPTON TEA 500ML $1.00">
+    <option value="LIPTON LATA $1.00">
+    <option value="AMP FORTE ENERGIZANTE RECARGADO $1.00">
+    <option value="COCA COLA LATA $0.75">
+    <option value="COCA COLA 1.5L $1.25">
+    <option value="SALUTARIS LATA $0.75">
+    <option value="SALUTARIS 1.25L $1.25">
+    <option value="KINLEY LATA $0.75">
+    <option value="PETIT 600ML $0.50">
+    <option value="PETIT LATA $0.75">
+    <option value="JUGO DEL VALLE $0.50">
+    <option value="AGUA 500ML $0.50">
+    <option value="AGUA CRISTAL 500ML $0.50">
+    <option value="AGUA CRISTAL 1L $0.75">
+    <option value="FARDO DE AGUA $1.25">
+    <option value="BOLSA DE AGUA X1 $0.15">
+    <option value="BOLSA DE AGUA X2 $0.25">
+    <option value="RAPTOR $1.00">
+    <option value="PILSENER LATA $1.50">
+    <option value="CORONA VIDRIO $1.85">
+    <option value="MICHELOB ULTRA $2.00">
+    <option value="STELA ARTOIS $2.00">
+    <option value="FRUTADO $0.50">
+    <option value="DE LA GRANJA PEQUEÑO $0.60">
+    <option value="DE LA GRANJA GRANDE $1.00">
+    <option value="COPA SUNDAE $1.50">
+    <option value="VASITO $0.75">
+    <option value="CONO SUNDAE $1.00">
+    <option value="CHOCOCONO $1.00">
+    <option value="CHOCO CONITO $0.35">
+    <option value="GIGA ALMENDRA $1.50">
+    <option value="GIGA CLASICA $1.50">
+    <option value="CINTA NEGRA $1.00">
+    <option value="CINTA NEGRA CRISPY $1.25">
+    <option value="BLOCK $0.85">
+    <option value="SANDWICH $1.00">
+    <option value="SANDWICHITO $1.00">
+    <option value="SANDIA $0.75">
+    <option value="HELADO TIPO CASERO $0.75">
+    <option value="CREMOSA $0.85">
+    <option value="PALITO $0.35">
+    <option value="FRUTA $0.75">
 </datalist>
 
 <script>
-    const productos = {
-        "qq DE MAICILLO $30.00": 33.50,
+    const productosPapelitos = {
+        "qq DE MAICILLO $33.50": 33.50,
         "@ MAICILLO $8.50": 8.50,
         "MAICILLO $1.00": 1.00,
         "1/2 @ MAICILLO $4.00": 4.00,
@@ -257,39 +322,113 @@
         "TRANSPORTE $10.00": 10.00,
         "TRANSPORTE $15.00": 15.00,
         "LAZO COLOR MEDIANO $1.25": 1.25,
-        "LACITO COLOR PEQUEÑO $0.75": 0.75,
-        "HUESO PREMIO $3.00": 3.00,
-        "CEPILLO P/PERRO $2.00": 2.00,
-        "KIT DE UÑA P/PERRO $6.00": 6.00,
-        "CORREAS COLORES $2.00": 2.00,
-        "CADENA DE FUERZA $1.75": 1.75,
-        "COLLAR DOBLE GRANDE $7.00": 7.00,
-        "CADENA P/PERRO 2.0MM $2.00": 2.00,
-        "CADENA P/PERRO 2.5MM $3.00": 3.00,
-        "CADENA P/PERRO 3.0MM $3.50": 3.50,
-        "CADENA P/PERRO 3.5MM $4.00": 4.00,
-        "COLLA P/RAZAS PEQUEÑAS $2.50": 2.50,
-        "COLLAR CORBATIN P/GATO $2.00": 2.00,
-        "BOSAL GRANDE P/PERRO $5.00": 5.00,
-        "COLLAR REFLECTIVO GRANDE $9.00": 9.00,
-        "PECHERA MINI $2.50": 2.50,
-        "PECHERA MEDIANA $3.00": 3.00,
-        "PECHERA GRANDE $4.50": 4.50,
-        "COLLAR GRANDE $3.50": 3.50
+        "LACITO COLOR PEQUEÑO $0.75": 0.75,
+        "HUESO PREMIO $3.00": 3.00,
+        "CEPILLO P/PERRO $2.00": 2.00,
+        "KIT DE UÑA P/PERRO $6.00": 6.00,
+        "CORREAS COLORES $2.00": 2.00,
+        "CADENA DE FUERZA $1.75": 1.75,
+        "COLLAR DOBLE GRANDE $7.00": 7.00,
+        "CADENA P/PERRO 2.0MM $2.00": 2.00,
+        "CADENA P/PERRO 2.5MM $3.00": 3.00,
+        "CADENA P/PERRO 3.0MM $3.50": 3.50,
+        "CADENA P/PERRO 3.5MM $4.00": 4.00,
+        "COLLA P/RAZAS PEQUEÑAS $2.50": 2.50,
+        "COLLAR CORBATIN P/GATO $2.00": 2.00,
+        "BOSAL GRANDE P/PERRO $5.00": 5.00,
+        "COLLAR REFLECTIVO GRANDE $9.00": 9.00,
+        "PECHERA MINI $2.50": 2.50,
+        "PECHERA MEDIANA $3.00": 3.00,
+        "PECHERA GRANDE $4.50": 4.50,
+        "COLLAR GRANDE $3.50": 3.50
     };
+
+    const productosBebidasPaletas = {
+        "POWER 1L $1.25": 1.25,
+        "GATORADE 1L $1.25": 1.25,
+        "LIPTON TEA 500ML $1.00": 1.00,
+        "LIPTON LATA $1.00": 1.00,
+        "AMP FORTE ENERGIZANTE RECARGADO $1.00": 1.00,
+        "COCA COLA LATA $0.75": 0.75,
+        "COCA COLA 1.5L $1.25": 1.25,
+        "SALUTARIS LATA $0.75": 0.75,
+        "SALUTARIS 1.25L $1.25": 1.25,
+        "KINLEY LATA $0.75": 0.75,
+        "PETIT 600ML $0.50": 0.50,
+        "PETIT LATA $0.75": 0.75,
+        "JUGO DEL VALLE $0.50": 0.50,
+        "AGUA 500ML $0.50": 0.50,
+        "AGUA CRISTAL 500ML $0.50": 0.50,
+        "AGUA CRISTAL 1L $0.75": 0.75,
+        "FARDO DE AGUA $1.25": 1.25,
+        "BOLSA DE AGUA X1 $0.15": 0.15,
+        "BOLSA DE AGUA X2 $0.25": 0.25,
+        "RAPTOR $1.00": 1.00,
+        "PILSENER LATA $1.50": 1.50,
+        "CORONA VIDRIO $1.85": 1.85,
+        "MICHELOB ULTRA $2.00": 2.00,
+        "STELA ARTOIS $2.00": 2.00,
+        "FRUTADO $0.50": 0.50,
+        "DE LA GRANJA PEQUEÑO $0.60": 0.60,
+        "DE LA GRANJA GRANDE $1.00": 1.00,
+        "COPA SUNDAE $1.50": 1.50,
+        "VASITO $0.75": 0.75,
+        "CONO SUNDAE $1.00": 1.00,
+        "CHOCOCONO $1.00": 1.00,
+        "CHOCO CONITO $0.35": 0.35,
+        "GIGA ALMENDRA $1.50": 1.50,
+        "GIGA CLASICA $1.50": 1.50,
+        "CINTA NEGRA $1.00": 1.00,
+        "CINTA NEGRA CRISPY $1.25": 1.25,
+        "BLOCK $0.85": 0.85,
+        "SANDWICH $1.00": 1.00,
+        "SANDWICHITO $1.00": 1.00,
+        "SANDIA $0.75": 0.75,
+        "HELADO TIPO CASERO $0.75": 0.75,
+        "CREMOSA $0.85": 0.85,
+        "PALITO $0.35": 0.35,
+        "FRUTA $0.75": 0.75
+    };
+
+    let modoActual = 'papelitos';
+    let productos = productosPapelitos;
 
     let totalVenta = 0;
     const listaProductosVendidos = document.getElementById('lista-productos-vendidos');
     const totalPagar = document.getElementById('total-pagar');
     const clienteInput = document.getElementById('cliente');
-    const clienteNombrePlaceholder = document.getElementById('cliente-nombre-placeholder');
+    const productoInput = document.getElementById('producto');
+    const modoVentaBtn = document.getElementById('modo-venta');
+    const imprimirBtn = document.getElementById('imprimir-btn');
     
+    function cambiarModoVenta() {
+        if (modoActual === 'papelitos') {
+            modoActual = 'bebidas_paletas';
+            productos = productosBebidasPaletas;
+            modoVentaBtn.textContent = 'BEBIDAS / PALETAS';
+            productoInput.setAttribute('list', 'listaProductosBebidasPaletas');
+            imprimirBtn.textContent = 'Imprimir Ticket 🖨️';
+        } else {
+            modoActual = 'papelitos';
+            productos = productosPapelitos;
+            modoVentaBtn.textContent = 'PAPELITOS';
+            productoInput.setAttribute('list', 'listaProductosPapelitos');
+            imprimirBtn.textContent = 'Imprimir 2 Copias 🖨️';
+        }
+        // Limpiar la venta actual al cambiar de modo
+        listaProductosVendidos.innerHTML = '';
+        totalVenta = 0;
+        totalPagar.textContent = '$0.00';
+        productoInput.value = '';
+    }
+
     function agregarProducto() {
         const nombreProducto = document.getElementById('producto').value;
         const cantidad = parseInt(document.getElementById('cantidad').value);
 
-        if (productos[nombreProducto] && cantidad > 0) {
-            const precioUnitario = productos[nombreProducto];
+        const precioUnitario = productos[nombreProducto];
+
+        if (precioUnitario && cantidad > 0) {
             const precioTotalProducto = precioUnitario * cantidad;
 
             const div = document.createElement('div');
@@ -312,43 +451,61 @@
     }
 
     function imprimirTickets() {
-        // Prepara el contenido del ticket
-        const ticketContent = document.querySelector('.ticket-box').innerHTML;
-        const clienteNombre = clienteInput.value || "Público en General";
-        
-        // Crea la copia para el cliente
-        const copiaCliente = `
-            <div class="print-copy">
-                <h3 style="text-align: center;">COPIA CLIENTE</h3>
-                <p style="text-align: center;">** Gracias por su compra **</p>
-                <hr>
-                <p><strong>Cliente:</strong> ${clienteNombre}</p>
-                ${ticketContent}
-            </div>
-        `;
-        
-        // Crea la copia para CAJA
-        const copiaCaja = `
-            <div class="print-copy">
-                <h3 style="text-align: center;">COPIA CAJA</h3>
-                <p style="text-align: center;">** Registro Interno **</p>
-                <hr>
-                <p><strong>Cliente:</strong> ${clienteNombre}</p>
-                ${ticketContent}
-            </div>
-        `;
-        
-        // Agrega las copias al área de impresión
         const printArea = document.querySelector('.print-area');
-        printArea.innerHTML = copiaCliente + copiaCaja;
+        let ticketHTML = '';
+
+        if (modoActual === 'papelitos') {
+            const ticketContent = document.querySelector('.ticket-box').innerHTML;
+            const clienteNombre = clienteInput.value || "Público en General";
+            
+            const copiaCliente = `
+                <div class="print-copy">
+                    <h3 style="text-align: center;">COPIA CLIENTE</h3>
+                    <p style="text-align: center;">** Gracias por su compra **</p>
+                    <hr>
+                    <p><strong>Cliente:</strong> ${clienteNombre}</p>
+                    ${ticketContent}
+                </div>
+            `;
+            
+            const copiaCaja = `
+                <div class="print-copy">
+                    <h3 style="text-align: center;">COPIA CAJA</h3>
+                    <p style="text-align: center;">** Registro Interno **</p>
+                    <hr>
+                    <p><strong>Cliente:</strong> ${clienteNombre}</p>
+                    ${ticketContent}
+                </div>
+            `;
+            ticketHTML = copiaCliente + copiaCaja;
+
+        } else if (modoActual === 'bebidas_paletas') {
+            const items = listaProductosVendidos.querySelectorAll('.item-row');
+            let itemsText = '';
+            items.forEach(item => {
+                const [nombre, precio] = item.textContent.trim().split(/\s{2,}/);
+                itemsText += `<p class="ticket-simple">${nombre} ${precio}</p>`;
+            });
+
+            const totalText = totalPagar.textContent;
+            ticketHTML = `
+                <div class="ticket-simple">
+                    ${itemsText}
+                    <p>-------------------------</p>
+                    <p>Total:      ${totalText}</p>
+                </div>
+            `;
+        }
         
-        // Muestra el área de impresión y luego imprime
+        printArea.innerHTML = ticketHTML;
+        
         printArea.style.display = 'block';
         window.print();
-        
-        // Oculta el área de impresión después de imprimir
         printArea.style.display = 'none';
     }
+
+    // Configuración inicial del datalist
+    productoInput.setAttribute('list', 'listaProductosPapelitos');
 </script>
 
 </body>
