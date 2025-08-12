@@ -1,11 +1,9 @@
 const CACHE_NAME = 'agroservicio-v1';
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/service-worker.js',
-  // Si tienes más archivos, añádelos aquí.
-  // Por ejemplo, CSS, imágenes, etc.
+  './', // Esto es crucial para la página principal (index.html)
+  './index.html',
+  './manifest.json',
+  './service-worker.js',
 ];
 
 self.addEventListener('install', (event) => {
@@ -33,3 +31,4 @@ self.addEventListener('fetch', (event) => {
       })
   );
 });
+
