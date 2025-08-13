@@ -132,7 +132,7 @@
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./service-worker.js')
+                navigator.serviceWorker.register('/service-worker.js')
                     .then(registration => {
                         console.log('Service Worker registrado con éxito:', registration.scope);
                     })
@@ -467,14 +467,16 @@
     function imprimirTickets() {
         const printArea = document.querySelector('.print-area');
         let ticketHTML = '';
+        const fechaActual = new Date().toLocaleString();
 
         if (modoActual === 'papelitos') {
             const ticketContent = document.querySelector('.ticket-box').innerHTML;
-            const clienteNombre = clienteInput.value || "Público en General";
+            const clienteNombre = clienteInput.value || "Clientes Varios";
             
             const copiaCliente = `
                 <div class="print-copy">
                     <h3 style="text-align: center;">COPIA CLIENTE</h3>
+                    <p style="text-align: center;">${fechaActual}</p>
                     <p style="text-align: center;">** Gracias por su compra **</p>
                     <hr>
                     <p><strong>Cliente:</strong> ${clienteNombre}</p>
@@ -485,6 +487,7 @@
             const copiaCaja = `
                 <div class="print-copy">
                     <h3 style="text-align: center;">COPIA CAJA</h3>
+                    <p style="text-align: center;">${fechaActual}</p>
                     <p style="text-align: center;">** Registro Interno **</p>
                     <hr>
                     <p><strong>Cliente:</strong> ${clienteNombre}</p>
@@ -504,6 +507,7 @@
             const totalText = totalPagar.textContent;
             ticketHTML = `
                 <div class="ticket-simple">
+                    <p>${fechaActual}</p>
                     ${itemsText}
                     <p>-------------------------</p>
                     <p>Total:      ${totalText}</p>
