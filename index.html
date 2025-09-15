@@ -85,12 +85,22 @@
             text-align: center;
             margin-bottom: 10px;
         }
-
         .switch-container {
             text-align: center;
             margin-bottom: 20px;
         }
-
+        .switch-container button {
+            width: auto;
+            display: inline-block;
+            margin: 5px;
+            background-color: #ccc;
+            color: black;
+        }
+        .switch-container button.active {
+            background-color: #5cb85c;
+            color: white;
+            font-weight: bold;
+        }
         /* Estilos para impresión */
         @media print {
             body {
@@ -143,37 +153,56 @@
         }
     </script>
 </head>
-<body>
+<body onload="setModoVenta('papelitos')">
 
 <div class="container no-print">
     <h1>AGROSERVICIO Y FERRETERIA BUJAIDA</h1>
     
     <div class="switch-container">
-        <label for="modo-venta">Modo de Venta:</label>
-        <button id="modo-venta" onclick="cambiarModoVenta()">PAPELITOS</button>
+        <button id="btn-papelitos" onclick="setModoVenta('papelitos')">Papelitos</button>
+        <button id="btn-bebidas_paletas" onclick="setModoVenta('bebidas_paletas')">Bebidas / Paletas</button>
+        <button id="btn-cotizaciones" onclick="setModoVenta('cotizaciones')">Cotizaciones</button>
     </div>
 
-    <label for="cliente">Nombre del Cliente:</label>
-    <input type="text" id="cliente" placeholder="Escriba el nombre del cliente...">
+    <div id="venta-inputs">
+        <label for="cliente">Nombre del Cliente:</label>
+        <input type="text" id="cliente" placeholder="Escriba el nombre del cliente...">
 
-    <label for="producto">Producto:</label>
-    <input type="text" id="producto" list="listaProductos" placeholder="Buscar producto...">
-    <datalist id="listaProductos"></datalist>
-    
-    <label for="cantidad">Cantidad:</label>
-    <input type="number" id="cantidad" value="1" min="1">
-    
-    <button onclick="agregarProducto()">Añadir a la venta</button>
-    
-    <div class="ticket-box">
-        <h3>Detalle de la Venta</h3>
-        <p id="cliente-nombre-placeholder" style="display:none;"></p>
-        <div id="lista-productos-vendidos">
+        <label for="producto">Producto:</label>
+        <input type="text" id="producto" list="listaProductos" placeholder="Buscar producto...">
+        <datalist id="listaProductos"></datalist>
+        
+        <label for="cantidad">Cantidad:</label>
+        <input type="number" id="cantidad" value="1" min="1">
+        
+        <button onclick="agregarProducto()">Añadir a la venta</button>
+        
+        <div class="ticket-box">
+            <h3>Detalle de la Venta</h3>
+            <p id="cliente-nombre-placeholder" style="display:none;"></p>
+            <div id="lista-productos-vendidos">
+            </div>
+            <hr>
+            <div class="item-row">
+                <strong>Total:</strong>
+                <strong id="total-pagar">$0.00</strong>
+            </div>
         </div>
-        <hr>
-        <div class="item-row">
-            <strong>Total:</strong>
-            <strong id="total-pagar">$0.00</strong>
+    </div>
+
+    <div id="cotizacion-inputs" style="display:none;">
+        <label for="cotizacion-descripcion">Descripción del Artículo:</label>
+        <input type="text" id="cotizacion-descripcion" placeholder="Escriba la descripción...">
+        
+        <label for="cotizacion-precio">Precio Público:</label>
+        <input type="number" id="cotizacion-precio" placeholder="0.00" min="0" step="0.01">
+
+        <button onclick="agregarACotizacion()">Añadir a Cotización</button>
+
+        <div class="ticket-box">
+            <h3>Detalle de la Cotización</h3>
+            <div id="lista-cotizaciones-items">
+            </div>
         </div>
     </div>
     
