@@ -7,14 +7,37 @@ const totalPagar = document.getElementById('total-pagar');
 const clienteInput = document.getElementById('cliente');
 const productoInput = document.getElementById('producto');
 const cantidadInput = document.getElementById('cantidad');
-const imprimirBtn = document.getElementById('imprimir-btn');
 
-// Nuevos elementos para cotizaciones
+// Elementos para Venta/Cotizaciones
 const ventaInputsContainer = document.getElementById('venta-inputs');
 const cotizacionInputsContainer = document.getElementById('cotizacion-inputs');
 const cotizacionDescripcionInput = document.getElementById('cotizacion-descripcion');
 const cotizacionPrecioInput = document.getElementById('cotizacion-precio');
 const listaCotizacionesItems = document.getElementById('lista-cotizaciones-items');
+const imprimirBtnVenta = document.getElementById('imprimir-btn-venta');
+const imprimirBtnCotizacion = document.getElementById('imprimir-btn-cotizacion');
+
+
+// NUEVOS elementos para RESERVAS DE POLLITOS
+const reservaInputsContainer = document.getElementById('reserva-inputs');
+const clienteReservaInput = document.getElementById('cliente-reserva');
+const pollitoTipoSelect = document.getElementById('pollito-tipo');
+const cantidadReservaInput = document.getElementById('cantidad-reserva');
+const fechaEntregaInput = document.getElementById('fecha-entrega');
+const abonoReservaInput = document.getElementById('abono-reserva');
+const totalReservaSpan = document.getElementById('total-reserva');
+const restaReservaSpan = document.getElementById('resta-reserva');
+const detalleReservaItemDiv = document.getElementById('detalle-reserva-item');
+
+let reservaActual = {
+    tipo: '',
+    cantidad: 0,
+    precioUnitario: 0,
+    total: 0,
+    abono: 0,
+    resta: 0,
+    fechaEntrega: ''
+};
 
 // Función para cargar los productos del archivo JSON
 async function cargarProductos() {
@@ -25,6 +48,7 @@ async function cargarProductos() {
         
         console.log('Productos cargados:', productos);
         actualizarDatalist(modoActual);
+        actualizarSelectPollitos(); 
     } catch (error) {
         console.error('Error al cargar los productos:', error);
     }
@@ -49,6 +73,22 @@ function actualizarDatalist(modo) {
     }
 }
 
+// NUEVA FUNCIÓN: Llenar el select de pollitos
+function actualizarSelectPollitos() {
+    const select = pollitoTipoSelect;
+    select.innerHTML = '<option value="">-- Seleccione el tipo de pollito --</option>';
+
+    if (productos['pollitos']) {
+        for (const nombre in productos['pollitos']) {
+            const option = document.createElement('option');
+            option.value = nombre;
+            option.textContent = nombre;
+            select.appendChild(option);
+        }
+    }
+}
+
+
 // Inicia el proceso de carga
 cargarProductos();
 
@@ -61,15 +101,30 @@ function setModoVenta(modo) {
     });
     document.getElementById(`btn-${modo}`).classList.add('active');
 
-    // Ocultar/mostrar los campos de entrada según el modo
+    // Ocultar/mostrar los contenedores de inputs
+    ventaInputsContainer.style.display = 'none';
+    cotizacionInputsContainer.style.display = 'none';
+    reservaInputsContainer.style.display = 'none'; 
+    
+    // Ocultar botones de impresión específicos de venta/cotización
+    if(imprimirBtnVenta) imprimirBtnVenta.style.display = 'none';
+    if(imprimirBtnCotizacion) imprimirBtnCotizacion.style.display = 'none';
+    
+    // Lógica específica para cada modo
     if (modo === 'cotizaciones') {
-        ventaInputsContainer.style.display = 'none';
         cotizacionInputsContainer.style.display = 'block';
-        imprimirBtn.textContent = 'Imprimir Cotización 🖨️';
-    } else {
+        if(imprimirBtnCotizacion) imprimirBtnCotizacion.style.display = 'block';
+    } else if (modo === 'pollitos') {
+        reservaInputsContainer.style.display = 'block';
+        // En este modo la impresión la hace 'Reservar Pollitos'
+        calcularReserva();
+    } 
+    else {
         ventaInputsContainer.style.display = 'block';
-        cotizacionInputsContainer.style.display = 'none';
-        imprimirBtn.textContent = (modo === 'papelitos' ? 'Imprimir 2 Copias 🖨️' : 'Imprimir Ticket 🖨️');
+        if(imprimirBtnVenta) {
+            imprimirBtnVenta.style.display = 'block';
+            imprimirBtnVenta.textContent = (modo === 'papelitos' ? 'Imprimir 2 Copias 🖨️' : 'Imprimir Ticket 🖨️');
+        }
         actualizarDatalist(modo);
     }
 
@@ -82,14 +137,98 @@ function setModoVenta(modo) {
     cotizacionDescripcionInput.value = '';
     cotizacionPrecioInput.value = '';
     clienteInput.value = '';
+    // Limpiar campos de reserva
+    clienteReservaInput.value = '';
+    pollitoTipoSelect.value = '';
+    cantidadReservaInput.value = '10';
+    fechaEntregaInput.value = '';
+    abonoReservaInput.value = '';
+    totalReservaSpan.textContent = '$0.00';
+    restaReservaSpan.textContent = '$0.00';
+    detalleReservaItemDiv.innerHTML = '';
+}
+
+// NUEVA FUNCIÓN: Cálculo dinámico de la reserva
+function calcularReserva() {
+    const tipo = pollitoTipoSelect.value;
+    const cantidad = parseInt(cantidadReservaInput.value) || 0;
+    let abono = parseFloat(abonoReservaInput.value) || 0;
+    
+    const precioUnitario = productos['pollitos'] && productos['pollitos'][tipo] ? productos['pollitos'][tipo] : 0;
+    
+    const total = precioUnitario * cantidad;
+    
+    // Validar que el abono no exceda el total
+    if (abono > total) {
+        abono = total;
+        abonoReservaInput.value = total.toFixed(2);
+    }
+    // Asegurar que abono no sea negativo
+    if (abono < 0) {
+        abono = 0;
+        abonoReservaInput.value = '0.00';
+    }
+
+    const resta = total - abono;
+
+    // Actualizar objeto de reserva actual
+    reservaActual = {
+        tipo: tipo,
+        cantidad: cantidad,
+        precioUnitario: precioUnitario,
+        total: total,
+        abono: abono,
+        resta: resta,
+        fechaEntrega: fechaEntregaInput.value
+    };
+
+    // Actualizar el DOM
+    totalReservaSpan.textContent = `$${total.toFixed(2)}`;
+    restaReservaSpan.textContent = `$${resta.toFixed(2)}`;
+    
+    // Mostrar detalle del item
+    detalleReservaItemDiv.innerHTML = '';
+    if (tipo && cantidad > 0) {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'item-row';
+        itemDiv.innerHTML = `
+            <span>${tipo} (${cantidad} x $${precioUnitario.toFixed(2)})</span>
+            <span>$${total.toFixed(2)}</span>
+        `;
+        detalleReservaItemDiv.appendChild(itemDiv);
+    }
+}
+
+// NUEVA FUNCIÓN: Procesar la reserva (Validación e Impresión)
+function procesarReserva() {
+    calcularReserva(); // Asegurar que los cálculos estén actualizados
+
+    if (reservaActual.total <= 0) {
+        alert('❌ Por favor, seleccione un tipo de pollito y una cantidad válida.');
+        return;
+    }
+    if (!clienteReservaInput.value.trim()) {
+        alert('❌ Por favor, ingrese el nombre del cliente.');
+        clienteReservaInput.focus();
+        return;
+    }
+    if (!fechaEntregaInput.value) {
+        alert('❌ Por favor, ingrese la fecha de entrega.');
+        fechaEntregaInput.focus();
+        return;
+    }
+
+    // Aquí iría la lógica para guardar la reserva en el sistema (Pendiente)
+
+    imprimirTickets();
 }
 
 function agregarProducto() {
     const nombreProducto = productoInput.value;
     const cantidad = parseInt(document.getElementById('cantidad').value);
-    const precioUnitario = productos[modoActual][nombreProducto];
+    const precioUnitario = productos[modoActual] && productos[modoActual][nombreProducto] ? productos[modoActual][nombreProducto] : 0;
 
-    if (precioUnitario && cantidad > 0) {
+    if (precioUnitario > 0 && cantidad > 0) {
         const precioTotalProducto = precioUnitario * cantidad;
 
         const div = document.createElement('div');
@@ -141,14 +280,65 @@ function imprimirTickets() {
     const printArea = document.querySelector('.print-area');
     let ticketHTML = '';
     const fechaActual = new Date().toLocaleString();
-    const encabezadoComun = `
-        <h3 style="text-align: center;">AGROSERVICIO Y FERRETERIA BUJAIDA</h3>
-        <p style="text-align: center;">Sucursal Desvío a San Pedro Nonualco</p>
-        <p style="text-align: center;">Teléfono y Whatsapp 7296-9007</p>
-        <hr>
-    `;
+    
+    // Función de formato de fecha para la impresión
+    const formatPrintDate = (date) => {
+        if (!date) return 'N/A';
+        // Convierte la cadena 'YYYY-MM-DD' a un objeto Date para formatear
+        return new Date(date + 'T00:00:00').toLocaleDateString('es-SV', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    }
 
-    if (modoActual === 'cotizaciones') {
+    if (modoActual === 'pollitos') {
+        const { tipo, cantidad, precioUnitario, total, abono, resta, fechaEntrega } = reservaActual;
+        const clienteNombre = clienteReservaInput.value;
+        const fechaReserva = formatPrintDate(new Date().toISOString().slice(0, 10)); // Formatea la fecha actual de reserva
+        const fechaEntregaFmt = formatPrintDate(fechaEntrega);
+
+        if (total === 0) {
+             alert('❌ No hay una reserva válida para imprimir.');
+             return;
+        }
+
+        const detalleReservaHTML = `
+            <div class="item-row">
+                <span>${tipo} (${cantidad} x $${precioUnitario.toFixed(2)})</span>
+                <span>$${total.toFixed(2)}</span>
+            </div>
+        `;
+        
+        ticketHTML = `
+            <div class="print-copy">
+                <h3 style="text-align: center;">RESERVA DE POLLITOS</h3>
+                <p style="text-align: center;">AGROSERVICIO Y FERRETERIA BUJAIDA</p>
+                <p style="text-align: center;">Teléfono y Whatsapp 7296-9007</p>
+                <hr>
+                <p><strong>Cliente:</strong> ${clienteNombre}</p>
+                <p><strong>Fecha de Reserva:</strong> ${fechaReserva}</p>
+                <p><strong>Fecha Estimada de Entrega:</strong> ${fechaEntregaFmt}</p>
+                <hr>
+                ${detalleReservaHTML}
+                <hr>
+                <div class="item-row">
+                    <strong>Total a Pagar:</strong>
+                    <strong>$${total.toFixed(2)}</strong>
+                </div>
+                <div class="item-row">
+                    <strong>Abono:</strong>
+                    <strong>$${abono.toFixed(2)}</strong>
+                </div>
+                <div class="item-row">
+                    <strong>Resta por Cancelar:</strong>
+                    <strong style="color: #d9534f;">$${resta.toFixed(2)}</strong>
+                </div>
+                <hr>
+                <p style="text-align: center; font-size: 10px; margin-top: 15px;">
+                    Por control de calidad, debe pasar por sus pollitos el dia asignado en el momento de la reserva
+                </p>
+                <p style="text-align: center; margin-top: 20px;">** Gracias por su reserva **</p>
+            </div>
+        `;
+
+    } else if (modoActual === 'cotizaciones') {
         const items = listaCotizacionesItems.querySelectorAll('.item-row');
 
         if (items.length === 0) {
@@ -188,7 +378,7 @@ function imprimirTickets() {
             </div>
         `;
         
-        const copiaCaja = `
+        const copiaCopia = `
             <div class="print-copy">
                 <h3 style="text-align: center;">COPIA CAJA</h3>
                 <p style="text-align: center;">${fechaActual}</p>
@@ -198,7 +388,7 @@ function imprimirTickets() {
                 ${ticketContent}
             </div>
         `;
-        ticketHTML = copiaCliente + copiaCaja;
+        ticketHTML = copiaCliente + copiaCopia;
 
     } else if (modoActual === 'bebidas_paletas') {
         const items = listaProductosVendidos.querySelectorAll('.item-row');
