@@ -2,13 +2,26 @@ let productos = {};
 let totalVenta = 0;
 let modoActual = 'papelitos';
 
+// Constantes de Conversión
+const FACTOR_YARDA_A_METRO = 0.9144;
+const FACTOR_VARA_A_METRO = 0.8359; // Vara (salvadoreña/regional)
+const FACTOR_PIE_A_METRO = 0.3048;
+const FACTOR_PULGADA_A_METRO = 0.0254;
+const FACTOR_CM_A_METRO = 0.01;
+
+const FACTOR_LIBRA_A_KG = 0.453592;
+const FACTOR_QUINTAL_A_KG = 45.3592; // 100 libras en un quintal
+
+const FACTOR_GALON_A_LITRO = 3.78541;
+
+const RELACION_STIHL_ML_POR_GALON = 76; // 76 ml de aceite por cada galón
+
+// Referencias de elementos de VENTA / COTIZACION / POLLITOS
 const listaProductosVendidos = document.getElementById('lista-productos-vendidos');
 const totalPagar = document.getElementById('total-pagar');
 const clienteInput = document.getElementById('cliente');
 const productoInput = document.getElementById('producto');
 const cantidadInput = document.getElementById('cantidad');
-
-// Elementos para Venta/Cotizaciones
 const ventaInputsContainer = document.getElementById('venta-inputs');
 const cotizacionInputsContainer = document.getElementById('cotizacion-inputs');
 const cotizacionDescripcionInput = document.getElementById('cotizacion-descripcion');
@@ -16,9 +29,6 @@ const cotizacionPrecioInput = document.getElementById('cotizacion-precio');
 const listaCotizacionesItems = document.getElementById('lista-cotizaciones-items');
 const imprimirBtnVenta = document.getElementById('imprimir-btn-venta');
 const imprimirBtnCotizacion = document.getElementById('imprimir-btn-cotizacion');
-
-
-// NUEVOS elementos para RESERVAS DE POLLITOS
 const reservaInputsContainer = document.getElementById('reserva-inputs');
 const clienteReservaInput = document.getElementById('cliente-reserva');
 const pollitoTipoSelect = document.getElementById('pollito-tipo');
@@ -39,6 +49,32 @@ let reservaActual = {
     fechaEntrega: ''
 };
 
+// NUEVAS Referencias de elementos de MEDIDAS
+const medidasInputsContainer = document.getElementById('medidas-inputs');
+
+// Longitud
+const mInput = document.getElementById('m-input');
+const yardaInput = document.getElementById('yarda-input');
+const varaInput = document.getElementById('vara-input');
+const pieInput = document.getElementById('pie-input');
+const cmInput = document.getElementById('cm-input');
+const pulgadaInput = document.getElementById('pulgada-input');
+
+// Masa/Peso
+const kgInput = document.getElementById('kg-input');
+const lbInput = document.getElementById('lb-input');
+const quintalInput = document.getElementById('quintal-input');
+
+// Volumen
+const litroInput = document.getElementById('litro-input');
+const galonInput = document.getElementById('galon-input');
+
+// STIHL
+const stihlCombustibleInput = document.getElementById('stihl-combustible-input');
+const stihlUnidadSelect = document.getElementById('stihl-unidad');
+const stihlAceiteML = document.getElementById('stihl-aceite-ml');
+
+
 // Función para cargar los productos del archivo JSON
 async function cargarProductos() {
     try {
@@ -57,10 +93,7 @@ async function cargarProductos() {
 function actualizarDatalist(modo) {
     const datalist = document.getElementById('listaProductos');
 
-    if (!datalist) {
-        console.error('El elemento <datalist id="listaProductos"> no fue encontrado en el HTML.');
-        return;
-    }
+    if (!datalist) return;
 
     datalist.innerHTML = '';
     const productosModo = productos[modo];
@@ -73,7 +106,6 @@ function actualizarDatalist(modo) {
     }
 }
 
-// NUEVA FUNCIÓN: Llenar el select de pollitos
 function actualizarSelectPollitos() {
     const select = pollitoTipoSelect;
     select.innerHTML = '<option value="">-- Seleccione el tipo de pollito --</option>';
@@ -101,10 +133,11 @@ function setModoVenta(modo) {
     });
     document.getElementById(`btn-${modo}`).classList.add('active');
 
-    // Ocultar/mostrar los contenedores de inputs
+    // Ocultar/mostrar contenedores de inputs
     ventaInputsContainer.style.display = 'none';
     cotizacionInputsContainer.style.display = 'none';
     reservaInputsContainer.style.display = 'none'; 
+    medidasInputsContainer.style.display = 'none'; // NUEVO: Ocultar/Mostrar medidas
     
     // Ocultar botones de impresión específicos de venta/cotización
     if(imprimirBtnVenta) imprimirBtnVenta.style.display = 'none';
@@ -116,8 +149,10 @@ function setModoVenta(modo) {
         if(imprimirBtnCotizacion) imprimirBtnCotizacion.style.display = 'block';
     } else if (modo === 'pollitos') {
         reservaInputsContainer.style.display = 'block';
-        // En este modo la impresión la hace 'Reservar Pollitos'
         calcularReserva();
+    } else if (modo === 'medidas') { // NUEVO: Modo Medidas
+        medidasInputsContainer.style.display = 'block';
+        // No hay ticket de impresión para medidas, así que no se muestra botón.
     } 
     else {
         ventaInputsContainer.style.display = 'block';
@@ -128,28 +163,200 @@ function setModoVenta(modo) {
         actualizarDatalist(modo);
     }
 
-    // Limpiar listas y campos
-    listaProductosVendidos.innerHTML = '';
-    listaCotizacionesItems.innerHTML = '';
-    totalVenta = 0;
-    totalPagar.textContent = '$0.00';
-    productoInput.value = '';
-    cotizacionDescripcionInput.value = '';
-    cotizacionPrecioInput.value = '';
-    clienteInput.value = '';
-    // Limpiar campos de reserva
-    clienteReservaInput.value = '';
-    pollitoTipoSelect.value = '';
-    cantidadReservaInput.value = '10';
-    fechaEntregaInput.value = '';
-    abonoReservaInput.value = '';
-    totalReservaSpan.textContent = '$0.00';
-    restaReservaSpan.textContent = '$0.00';
-    detalleReservaItemDiv.innerHTML = '';
+    // Limpiar campos no activos (Opcional, pero bueno para la UX)
+    if(modo !== 'pollitos') {
+        // Limpiar campos de reserva
+        clienteReservaInput.value = '';
+        pollitoTipoSelect.value = '';
+        cantidadReservaInput.value = '10';
+        fechaEntregaInput.value = '';
+        abonoReservaInput.value = '';
+        totalReservaSpan.textContent = '$0.00';
+        restaReservaSpan.textContent = '$0.00';
+        detalleReservaItemDiv.innerHTML = '';
+    }
+    if(modo !== 'venta_papelitos' && modo !== 'bebidas_paletas') {
+         // Limpiar campos de venta
+        listaProductosVendidos.innerHTML = '';
+        totalVenta = 0;
+        totalPagar.textContent = '$0.00';
+        productoInput.value = '';
+        clienteInput.value = '';
+    }
+    if(modo !== 'cotizaciones') {
+        // Limpiar campos de cotizacion
+        listaCotizacionesItems.innerHTML = '';
+        cotizacionDescripcionInput.value = '';
+        cotizacionPrecioInput.value = '';
+    }
 }
 
-// NUEVA FUNCIÓN: Cálculo dinámico de la reserva
+// --- CONVERSOR DE MEDIDAS ---
+
+/**
+ * Convierte un valor de longitud de una unidad de origen a todas las demás.
+ * @param {string} unidadOrigen - Unidad de origen ('m', 'yarda', 'vara', 'pie', 'cm', 'pulgada').
+ * @param {string} valorString - El valor ingresado en la unidad de origen.
+ */
+function convertirLongitud(unidadOrigen, valorString) {
+    const valor = parseFloat(valorString);
+    if (isNaN(valor) || valorString.trim() === '') {
+        // Limpia todos los campos si el valor no es válido o está vacío
+        mInput.value = '';
+        yardaInput.value = '';
+        varaInput.value = '';
+        pieInput.value = '';
+        cmInput.value = '';
+        pulgadaInput.value = '';
+        return;
+    }
+
+    let valorEnMetros = 0;
+
+    // 1. Convertir la unidad de origen a la unidad base (Metros)
+    switch (unidadOrigen) {
+        case 'm':
+            valorEnMetros = valor;
+            break;
+        case 'yarda':
+            valorEnMetros = valor * FACTOR_YARDA_A_METRO;
+            break;
+        case 'vara':
+            valorEnMetros = valor * FACTOR_VARA_A_METRO;
+            break;
+        case 'pie':
+            valorEnMetros = valor * FACTOR_PIE_A_METRO;
+            break;
+        case 'cm':
+            valorEnMetros = valor * FACTOR_CM_A_METRO;
+            break;
+        case 'pulgada':
+            valorEnMetros = valor * FACTOR_PULGADA_A_METRO;
+            break;
+    }
+
+    // 2. Convertir la unidad base (Metros) a todas las demás y actualizar los campos (excepto el de origen)
+    const toFixed = 4; // Precisión de 4 decimales
+    
+    if (unidadOrigen !== 'm') mInput.value = valorEnMetros.toFixed(toFixed);
+    if (unidadOrigen !== 'yarda') yardaInput.value = (valorEnMetros / FACTOR_YARDA_A_METRO).toFixed(toFixed);
+    if (unidadOrigen !== 'vara') varaInput.value = (valorEnMetros / FACTOR_VARA_A_METRO).toFixed(toFixed);
+    if (unidadOrigen !== 'pie') pieInput.value = (valorEnMetros / FACTOR_PIE_A_METRO).toFixed(toFixed);
+    if (unidadOrigen !== 'cm') cmInput.value = (valorEnMetros / FACTOR_CM_A_METRO).toFixed(toFixed);
+    if (unidadOrigen !== 'pulgada') pulgadaInput.value = (valorEnMetros / FACTOR_PULGADA_A_METRO).toFixed(toFixed);
+}
+
+/**
+ * Convierte un valor de peso de una unidad de origen a todas las demás.
+ * @param {string} unidadOrigen - Unidad de origen ('kg', 'libra', 'quintal').
+ * @param {string} valorString - El valor ingresado en la unidad de origen.
+ */
+function convertirPeso(unidadOrigen, valorString) {
+    const valor = parseFloat(valorString);
+    if (isNaN(valor) || valorString.trim() === '') {
+        kgInput.value = '';
+        lbInput.value = '';
+        quintalInput.value = '';
+        return;
+    }
+
+    let valorEnKg = 0;
+
+    // 1. Convertir a la unidad base (Kilogramos)
+    switch (unidadOrigen) {
+        case 'kg':
+            valorEnKg = valor;
+            break;
+        case 'libra':
+            valorEnKg = valor * FACTOR_LIBRA_A_KG;
+            break;
+        case 'quintal':
+            valorEnKg = valor * FACTOR_QUINTAL_A_KG;
+            break;
+    }
+
+    // 2. Convertir la unidad base (Kilogramos) a todas las demás
+    const toFixed = 4;
+
+    if (unidadOrigen !== 'kg') kgInput.value = valorEnKg.toFixed(toFixed);
+    if (unidadOrigen !== 'libra') lbInput.value = (valorEnKg / FACTOR_LIBRA_A_KG).toFixed(toFixed);
+    if (unidadOrigen !== 'quintal') quintalInput.value = (valorEnKg / FACTOR_QUINTAL_A_KG).toFixed(toFixed);
+}
+
+/**
+ * Convierte un valor de volumen de una unidad de origen a todas las demás.
+ * @param {string} unidadOrigen - Unidad de origen ('litro', 'galon').
+ * @param {string} valorString - El valor ingresado en la unidad de origen.
+ */
+function convertirVolumen(unidadOrigen, valorString) {
+    const valor = parseFloat(valorString);
+    if (isNaN(valor) || valorString.trim() === '') {
+        litroInput.value = '';
+        galonInput.value = '';
+        return;
+    }
+
+    let valorEnLitros = 0;
+
+    // 1. Convertir a la unidad base (Litros)
+    switch (unidadOrigen) {
+        case 'litro':
+            valorEnLitros = valor;
+            break;
+        case 'galon':
+            valorEnLitros = valor * FACTOR_GALON_A_LITRO;
+            break;
+    }
+
+    // 2. Convertir la unidad base (Litros) a todas las demás
+    const toFixed = 4;
+
+    if (unidadOrigen !== 'litro') litroInput.value = valorEnLitros.toFixed(toFixed);
+    if (unidadOrigen !== 'galon') galonInput.value = (valorEnLitros / FACTOR_GALON_A_LITRO).toFixed(toFixed);
+}
+
+
+/**
+ * Calcula el aceite STIHL requerido en ML basándose en el combustible y su unidad.
+ */
+function calcularStihl() {
+    const cantidadCombustible = parseFloat(stihlCombustibleInput.value);
+    const unidad = stihlUnidadSelect.value;
+    
+    if (isNaN(cantidadCombustible) || cantidadCombustible <= 0) {
+        stihlAceiteML.textContent = '0.00 ml';
+        return;
+    }
+
+    let galonesBase = 0;
+
+    // 1. Convertir la cantidad de combustible a la unidad base (Galones)
+    switch (unidad) {
+        case 'galon':
+            galonesBase = cantidadCombustible;
+            break;
+        case 'litro':
+            // Litros a Galones
+            galonesBase = cantidadCombustible / FACTOR_GALON_A_LITRO; 
+            break;
+        case 'ml':
+            // Mililitros a Litros, luego a Galones
+            const litros = cantidadCombustible / 1000;
+            galonesBase = litros / FACTOR_GALON_A_LITRO;
+            break;
+    }
+    
+    // 2. Aplicar la relación de mezcla: 76 ml de aceite por 1 galón
+    const aceiteRequeridoML = galonesBase * RELACION_STIHL_ML_POR_GALON;
+
+    stihlAceiteML.textContent = `${aceiteRequeridoML.toFixed(2)} ml`;
+}
+
+
+// --- Lógica de Venta / Reserva / Cotización (Mantenida) ---
+
 function calcularReserva() {
+    // ... (MANTENER CÓDIGO DE LA FUNCIÓN calcularReserva) ...
     const tipo = pollitoTipoSelect.value;
     const cantidad = parseInt(cantidadReservaInput.value) || 0;
     let abono = parseFloat(abonoReservaInput.value) || 0;
@@ -158,12 +365,10 @@ function calcularReserva() {
     
     const total = precioUnitario * cantidad;
     
-    // Validar que el abono no exceda el total
     if (abono > total) {
         abono = total;
         abonoReservaInput.value = total.toFixed(2);
     }
-    // Asegurar que abono no sea negativo
     if (abono < 0) {
         abono = 0;
         abonoReservaInput.value = '0.00';
@@ -171,7 +376,6 @@ function calcularReserva() {
 
     const resta = total - abono;
 
-    // Actualizar objeto de reserva actual
     reservaActual = {
         tipo: tipo,
         cantidad: cantidad,
@@ -182,11 +386,9 @@ function calcularReserva() {
         fechaEntrega: fechaEntregaInput.value
     };
 
-    // Actualizar el DOM
     totalReservaSpan.textContent = `$${total.toFixed(2)}`;
     restaReservaSpan.textContent = `$${resta.toFixed(2)}`;
     
-    // Mostrar detalle del item
     detalleReservaItemDiv.innerHTML = '';
     if (tipo && cantidad > 0) {
         const itemDiv = document.createElement('div');
@@ -199,9 +401,9 @@ function calcularReserva() {
     }
 }
 
-// NUEVA FUNCIÓN: Procesar la reserva (Validación e Impresión)
 function procesarReserva() {
-    calcularReserva(); // Asegurar que los cálculos estén actualizados
+    // ... (MANTENER CÓDIGO DE LA FUNCIÓN procesarReserva) ...
+    calcularReserva();
 
     if (reservaActual.total <= 0) {
         alert('❌ Por favor, seleccione un tipo de pollito y una cantidad válida.');
@@ -218,12 +420,11 @@ function procesarReserva() {
         return;
     }
 
-    // Aquí iría la lógica para guardar la reserva en el sistema (Pendiente)
-
     imprimirTickets();
 }
 
 function agregarProducto() {
+    // ... (MANTENER CÓDIGO DE LA FUNCIÓN agregarProducto) ...
     const nombreProducto = productoInput.value;
     const cantidad = parseInt(document.getElementById('cantidad').value);
     const precioUnitario = productos[modoActual] && productos[modoActual][nombreProducto] ? productos[modoActual][nombreProducto] : 0;
@@ -251,6 +452,7 @@ function agregarProducto() {
 }
 
 function agregarACotizacion() {
+    // ... (MANTENER CÓDIGO DE LA FUNCIÓN agregarACotizacion) ...
     const descripcion = cotizacionDescripcionInput.value;
     const precio = parseFloat(cotizacionPrecioInput.value);
 
@@ -277,21 +479,20 @@ function agregarACotizacion() {
 }
 
 function imprimirTickets() {
+    // ... (MANTENER CÓDIGO DE LA FUNCIÓN imprimirTickets) ...
     const printArea = document.querySelector('.print-area');
     let ticketHTML = '';
     const fechaActual = new Date().toLocaleString();
     
-    // Función de formato de fecha para la impresión
     const formatPrintDate = (date) => {
         if (!date) return 'N/A';
-        // Convierte la cadena 'YYYY-MM-DD' a un objeto Date para formatear
         return new Date(date + 'T00:00:00').toLocaleDateString('es-SV', { day: '2-digit', month: '2-digit', year: 'numeric' });
     }
 
     if (modoActual === 'pollitos') {
         const { tipo, cantidad, precioUnitario, total, abono, resta, fechaEntrega } = reservaActual;
         const clienteNombre = clienteReservaInput.value;
-        const fechaReserva = formatPrintDate(new Date().toISOString().slice(0, 10)); // Formatea la fecha actual de reserva
+        const fechaReserva = formatPrintDate(new Date().toISOString().slice(0, 10));
         const fechaEntregaFmt = formatPrintDate(fechaEntrega);
 
         if (total === 0) {
@@ -328,13 +529,13 @@ function imprimirTickets() {
                 </div>
                 <div class="item-row">
                     <strong>Resta por Cancelar:</strong>
-                    <strong style="color: #d9534f;">$${resta.toFixed(2)}</strong>
+                    <strong style="color: #000000;">$${resta.toFixed(2)}</strong>
                 </div>
                 <hr>
                 <p style="text-align: center; font-size: 10px; margin-top: 15px;">
-                    Por control de calidad, debe pasar por sus pollitos el dia asignado en el momento de la reserva
+                    Por control de calidad, debe pasar a retirar el dia asignado de entrega, de lo contrario perdera su reserva
                 </p>
-                <p style="text-align: center; margin-top: 20px;">** Gracias por su reserva **</p>
+                <p style="text-align: center; margin-top: 20px;">** Gracias por su Compra **</p>
             </div>
         `;
 
@@ -378,7 +579,7 @@ function imprimirTickets() {
             </div>
         `;
         
-        const copiaCopia = `
+        const copiaCaja = `
             <div class="print-copy">
                 <h3 style="text-align: center;">COPIA CAJA</h3>
                 <p style="text-align: center;">${fechaActual}</p>
@@ -388,7 +589,7 @@ function imprimirTickets() {
                 ${ticketContent}
             </div>
         `;
-        ticketHTML = copiaCliente + copiaCopia;
+        ticketHTML = copiaCliente + copiaCaja;
 
     } else if (modoActual === 'bebidas_paletas') {
         const items = listaProductosVendidos.querySelectorAll('.item-row');
@@ -408,7 +609,8 @@ function imprimirTickets() {
         `;
     }
     
-    printArea.innerHTML = ticketHTML;
-    
-    window.print();
+    if (ticketHTML) {
+        printArea.innerHTML = ticketHTML;
+        window.print();
+    }
 }
