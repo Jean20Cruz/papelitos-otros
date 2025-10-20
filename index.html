@@ -82,7 +82,7 @@
         .restante-pagar {
             font-size: 16px;
             font-weight: bold;
-            color: #d9534f;
+            color: #000000;
         }
         .imprimir-btn {
             background-color: #0275d8;
@@ -112,6 +112,46 @@
             color: white;
             font-weight: bold;
         }
+
+        /* Estilos específicos para el conversor de medidas */
+        .conversor-group {
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            background-color: #fafafa;
+        }
+        .conversor-group h4 {
+            margin-top: 0;
+            color: #333;
+        }
+        .conversor-input-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .conversor-input-row label {
+            width: 30%;
+            margin-top: 0;
+            text-align: right;
+        }
+        .conversor-input-row input {
+            width: 70%;
+            margin: 0;
+            padding: 8px;
+            font-size: 14px;
+        }
+        .stihl-result {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #000000;
+            margin-top: 5px;
+            text-align: center;
+            border: 1px dashed #ccc;
+            padding: 10px;
+        }
+
         /* Estilos para impresión */
         @media print {
             body {
@@ -174,9 +214,9 @@
         <button id="btn-bebidas_paletas" onclick="setModoVenta('bebidas_paletas')">Bebidas / Paletas</button>
         <button id="btn-pollitos" onclick="setModoVenta('pollitos')">Pollitos</button>
         <button id="btn-cotizaciones" onclick="setModoVenta('cotizaciones')">Cotizaciones</button>
-    </div>
+        <button id="btn-medidas" onclick="setModoVenta('medidas')">Medidas</button> </div>
 
-    <div id="venta-inputs">
+    <div id="venta-inputs" style="display:none;">
         <label for="cliente">Nombre del Cliente:</label>
         <input type="text" id="cliente" placeholder="Escriba el nombre del cliente...">
 
@@ -200,12 +240,12 @@
                 <strong id="total-pagar">$0.00</strong>
             </div>
         </div>
-        <button id="imprimir-btn-venta" class="imprimir-btn" onclick="imprimirTickets()">Imprimir Ticket 🖨️</button>
+        <button id="imprimir-btn-venta" class="imprimir-btn" onclick="imprimirTickets()">Imprimir Ticket 🍦</button>
     </div>
 
     <div id="reserva-inputs" style="display:none;">
-        <label for="cliente-reserva">Nombre del Cliente:</label>
-        <input type="text" id="cliente-reserva" placeholder="Escriba el nombre del cliente...">
+        <label for="cliente-reserva">Nombre del Cliente y Telefono:</label>
+        <input type="text" id="cliente-reserva" placeholder="Escriba el nombre del cliente y su telefono...">
 
         <label for="pollito-tipo">Pollito:</label>
         <select id="pollito-tipo" onchange="calcularReserva()">
@@ -220,30 +260,23 @@
         
         <div class="ticket-box">
             <h3>Detalle de la Reserva</h3>
-
-            <div id="detalle-reserva-item">
-            </div>
-            
+            <div id="detalle-reserva-item"></div>
             <hr>
-
             <div class="summary-row">
                 <strong>Total a pagar:</strong>
                 <strong id="total-reserva">$0.00</strong>
             </div>
-
             <label for="abono-reserva">Abono:</label>
             <input type="number" id="abono-reserva" placeholder="0.00" min="0" step="0.01" oninput="calcularReserva()">
-
             <hr>
-
             <div class="summary-row">
                 <strong>Resta:</strong>
                 <strong id="resta-reserva" class="restante-pagar">$0.00</strong>
             </div>
         </div>
-
-        <button onclick="procesarReserva()">Reservar Pollitos</button> 
+        <button onclick="procesarReserva()">Reservar Pollitos 🐣</button> 
     </div>
+
     <div id="cotizacion-inputs" style="display:none;">
         <label for="cotizacion-descripcion">Descripción del Artículo:</label>
         <input type="text" id="cotizacion-descripcion" placeholder="Escriba la descripción...">
@@ -258,9 +291,90 @@
             <div id="lista-cotizaciones-items">
             </div>
         </div>
-        <button id="imprimir-btn-cotizacion" class="imprimir-btn" onclick="imprimirTickets()">Imprimir Cotización 🖨️</button>
+        <button id="imprimir-btn-cotizacion" class="imprimir-btn" onclick="imprimirTickets()">Imprimir Cotización ✏️</button>
     </div>
-</div>
+
+    <div id="medidas-inputs" style="display:none;">
+        <h2>Conversor Express de Medidas</h2>
+        
+        <div class="conversor-group">
+            <h4>Longitud</h4>
+            <div class="conversor-input-row">
+                <label for="m-input">Metros (m):</label>
+                <input type="number" id="m-input" value="" placeholder="0.00" oninput="convertirLongitud('m', this.value)">
+            </div>
+            <div class="conversor-input-row">
+                <label for="yarda-input">Yardas (yd):</label>
+                <input type="number" id="yarda-input" value="" placeholder="0.00" oninput="convertirLongitud('yarda', this.value)">
+            </div>
+            <div class="conversor-input-row">
+                <label for="vara-input">Varas (var):</label>
+                <input type="number" id="vara-input" value="" placeholder="0.00" oninput="convertirLongitud('vara', this.value)">
+            </div>
+            <div class="conversor-input-row">
+                <label for="pie-input">Pies (ft):</label>
+                <input type="number" id="pie-input" value="" placeholder="0.00" oninput="convertirLongitud('pie', this.value)">
+            </div>
+            <div class="conversor-input-row">
+                <label for="cm-input">Centímetros (cm):</label>
+                <input type="number" id="cm-input" value="" placeholder="0.00" oninput="convertirLongitud('cm', this.value)">
+            </div>
+            <div class="conversor-input-row">
+                <label for="pulgada-input">Pulgadas (in):</label>
+                <input type="number" id="pulgada-input" value="" placeholder="0.00" oninput="convertirLongitud('pulgada', this.value)">
+            </div>
+        </div>
+
+        <div class="conversor-group">
+            <h4>Masa / Peso</h4>
+            <div class="conversor-input-row">
+                <label for="kg-input">Kilogramos (kg):</label>
+                <input type="number" id="kg-input" value="" placeholder="0.00" oninput="convertirPeso('kg', this.value)">
+            </div>
+            <div class="conversor-input-row">
+                <label for="lb-input">Libras (lb):</label>
+                <input type="number" id="lb-input" value="" placeholder="0.00" oninput="convertirPeso('libra', this.value)">
+            </div>
+            <div class="conversor-input-row">
+                <label for="quintal-input">Quintales (qq):</label>
+                <input type="number" id="quintal-input" value="" placeholder="0.00" oninput="convertirPeso('quintal', this.value)">
+            </div>
+        </div>
+
+        <div class="conversor-group">
+            <h4>Volumen</h4>
+            <div class="conversor-input-row">
+                <label for="litro-input">Litros (L):</label>
+                <input type="number" id="litro-input" value="" placeholder="0.00" oninput="convertirVolumen('litro', this.value)">
+            </div>
+            <div class="conversor-input-row">
+                <label for="galon-input">Galones (gal):</label>
+                <input type="number" id="galon-input" value="" placeholder="0.00" oninput="convertirVolumen('galon', this.value)">
+            </div>
+        </div>
+        
+        <div class="conversor-group">
+            <h4>Mezcla de Aceite STIHL (50:1)</h4>
+            <p style="text-align: center; font-size: 0.9em; margin-bottom: 10px;">Ingresa la cantidad de combustible y su unidad.</p>
+            <div class="conversor-input-row">
+                <label for="stihl-combustible-input">Combustible:</label>
+                <input type="number" id="stihl-combustible-input" value="" placeholder="0.00" oninput="calcularStihl()">
+            </div>
+            <label for="stihl-unidad">Unidad:</label>
+            <select id="stihl-unidad" onchange="calcularStihl()">
+                <option value="galon">Galones</option>
+                <option value="litro">Litros</option>
+                <option value="ml">Mililitros</option>
+            </select>
+            <label>Aceite STIHL (requerido):</label>
+            <div class="stihl-result" id="stihl-aceite-ml">0.00 ml</div>
+            <p style="text-align: center; font-size: 0.8em; margin-top: 10px;">Factor: 76 ml de aceite por 1 galón de combustible.</p>
+                        <p style="text-align: center; font-size: 0.8em; margin-top: 10px;">Desarrollado por Ing. Jean Garcia</p>
+
+        </div>
+
+    </div>
+    </div>
 
 <div class="print-area" style="display:none;"></div>
 
