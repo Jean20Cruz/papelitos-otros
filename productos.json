@@ -138,15 +138,16 @@
     "BLOCK $0.85": 0.85,
     "SANDWICH $1.00": 1.00,
     "SANDWICHITO $1.00": 1.00,
-    "SANDIA $0.75": 0.75,
+    "SANDIA $1.00": 1.00,
     "HELADO TIPO CASERO $0.75": 0.75,
     "CREMOSA $0.85": 0.85,
     "PALITO $0.35": 0.35,
-    "FRUTA $0.75": 0.75,
+    "FRUTA $1.00": 1.00,
     "FRESCA LATA $0.75": 0.75,
     "FURY $1.00": 1.00,
     "PANDA $0.85": 0.85,
-    "EL CHOCO $0.75": 0.75
+    "EL CHOCO $0.75": 0.75,
+    "UFO $1.00": 1.00
   },
   "pollitos": {
     "Pollito Mejorado $1.25": 1.25,
