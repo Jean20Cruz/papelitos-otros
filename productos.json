@@ -96,10 +96,8 @@
     "COLLAR DE CUERO GRANDE $5.50": 5.50,
     "LAZO ESPECIAL DE SEDA DE COLOR $14.00": 14.00,
     "PILA DE CEMENTO 2 LAVADEROS $70.00": 70.00,
-    "ESCOBA DE PALMA $3.00": 3.00,
-    "CREMA DE CHOCOLATE $0.20": 0.20,
-    "TABLETA DE CHOCOLATE PEQUEÑA $0.20": 0.20,
-    "TABLETA DE CHOCOLATE GRANDE $1.50": 1.50
+    "ESCOBA DE PALMA $3.00": 3.00
+    
 
   },
   "bebidas_paletas": {
@@ -152,7 +150,10 @@
     "FURY $1.00": 1.00,
     "PANDA $0.85": 0.85,
     "EL CHOCO $0.75": 0.75,
-    "UFO $1.00": 1.00
+    "UFO $1.00": 1.00,
+    "CREMA DE CHOCOLATE $0.20": 0.20,
+    "TABLETA DE CHOCOLATE PEQUEÑA $0.20": 0.20,
+    "TABLETA DE CHOCOLATE GRANDE $1.50": 1.50
   },
   "pollitos": {
     "Pollito Mejorado $1.25": 1.25,
