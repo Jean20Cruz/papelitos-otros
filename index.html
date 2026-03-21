@@ -299,9 +299,10 @@
     </div>
 
     <div id="medidas-inputs" style="display:none;">
-        <h2>Conversor Express de Medidas</h2>
-        
-        <div class="conversor-group">
+
+    <h2>Conversor Express de Medidas</h2>
+    
+            <div class="conversor-group">
             <h4>Longitud</h4>
             <div class="conversor-input-row">
                 <label for="m-input">Metros (m):</label>
@@ -328,24 +329,32 @@
                 <input type="number" id="pulgada-input" value="" placeholder="0.00" oninput="convertirLongitud('pulgada', this.value)">
             </div>
         </div>
-
-        <div class="conversor-group">
-            <h4>Masa / Peso</h4>
-            <div class="conversor-input-row">
-                <label for="kg-input">Kilogramos (kg):</label>
-                <input type="number" id="kg-input" value="" placeholder="0.00" oninput="convertirPeso('kg', this.value)">
-            </div>
-            <div class="conversor-input-row">
-                <label for="lb-input">Libras (lb):</label>
-                <input type="number" id="lb-input" value="" placeholder="0.00" oninput="convertirPeso('libra', this.value)">
-            </div>
-            <div class="conversor-input-row">
-                <label for="quintal-input">Quintales (qq):</label>
-                <input type="number" id="quintal-input" value="" placeholder="0.00" oninput="convertirPeso('quintal', this.value)">
-            </div>
+    
+    <div class="conversor-group">
+        <h4>Masa / Peso</h4>
+        <div class="conversor-input-row">
+            <label>Kilogramos (kg):</label>
+            <input type="number" id="kg-input" placeholder="0.00" oninput="convertirPeso('kg', this.value)">
         </div>
+        <div class="conversor-input-row">
+            <label>Libras (lb):</label>
+            <input type="number" id="lb-input" placeholder="0.00" oninput="convertirPeso('libra', this.value)">
+        </div>
+        <div class="conversor-input-row">
+            <label>Arrobas (@):</label>
+            <input type="number" id="arroba-input" placeholder="0.00" oninput="convertirPeso('arroba', this.value)">
+        </div>
+        <div class="conversor-input-row">
+            <label>Quintales (qq):</label>
+            <input type="number" id="quintal-input" placeholder="0.00" oninput="convertirPeso('quintal', this.value)">
+        </div>
+        <div class="conversor-input-row">
+            <label>Toneladas (t):</label>
+            <input type="number" id="ton-input" placeholder="0.00" oninput="convertirPeso('ton', this.value)">
+        </div>
+    </div>
 
-        <div class="conversor-group">
+    <div class="conversor-group">
             <h4>Volumen</h4>
             <div class="conversor-input-row">
                 <label for="litro-input">Litros (L):</label>
@@ -355,8 +364,37 @@
                 <label for="galon-input">Galones (gal):</label>
                 <input type="number" id="galon-input" value="" placeholder="0.00" oninput="convertirVolumen('galon', this.value)">
             </div>
+            
+            <div class="conversor-input-row">
+                <label>Barriles:</label>
+                <input type="number" id="barril-input" placeholder="0.00" oninput="convertirVolumen('barril', this.value)">
+            </div>
+    </div>
+
+    <div class="conversor-group">
+        <h4>Hierro (Varillas ↔ Quintales)</h4>
+        <div class="conversor-input-row">
+            <label>Corrugado 3/8:</label>
+            <input type="number" id="h-38-v" placeholder="Varillas" oninput="convertirHierro('3/8', 'v', this.value)">
+            <input type="number" id="h-38-q" placeholder="qq" oninput="convertirHierro('3/8', 'q', this.value)">
         </div>
-        
+        <div class="conversor-input-row">
+            <label>Corrugado 1/2:</label>
+            <input type="number" id="h-12-v" placeholder="Varillas" oninput="convertirHierro('1/2', 'v', this.value)">
+            <input type="number" id="h-12-q" placeholder="qq" oninput="convertirHierro('1/2', 'q', this.value)">
+        </div>
+        <div class="conversor-input-row">
+            <label>Corrugado 5/8:</label>
+            <input type="number" id="h-58-v" placeholder="Varillas" oninput="convertirHierro('5/8', 'v', this.value)">
+            <input type="number" id="h-58-q" placeholder="qq" oninput="convertirHierro('5/8', 'q', this.value)">
+        </div>
+        <div class="conversor-input-row">
+            <label>Liso 1/4:</label>
+            <input type="number" id="h-14-v" placeholder="Varillas" oninput="convertirHierro('1/4', 'v', this.value)">
+            <input type="number" id="h-14-q" placeholder="qq" oninput="convertirHierro('1/4', 'q', this.value)">
+        </div>
+    </div>
+
         <div class="conversor-group">
             <h4>Mezcla de Aceite STIHL (50:1)</h4>
             <p style="text-align: center; font-size: 0.9em; margin-bottom: 10px;">Ingresa la cantidad de combustible y su unidad.</p>
@@ -375,10 +413,8 @@
             <p style="text-align: center; font-size: 0.8em; margin-top: 10px;">Factor: 76 ml de aceite por 1 galón de combustible.</p>
                         <p style="text-align: center; font-size: 0.8em; margin-top: 10px;">Desarrollado por Ing. Jean Garcia</p>
 
-        </div>
-
-    </div>
-    </div>
+     </div>
+</div>
 
 <div class="print-area" style="display:none;"></div>
 
