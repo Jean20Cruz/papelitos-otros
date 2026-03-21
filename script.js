@@ -16,6 +16,18 @@ const FACTOR_GALON_A_LITRO = 3.78541;
 
 const RELACION_STIHL_ML_POR_GALON = 76; // 76 ml de aceite por cada galón
 
+const FACTOR_ARROBA_A_KG = 11.3398; // 25 lbs
+const FACTOR_TONELADA_A_KG = 1000;
+const FACTOR_BARRIL_A_LITRO = 158.987; // Estándar de 42 galones aprox.
+
+// Tasas de Hierro (Varillas por 1 qq)
+const HIERRO_TASAS = {
+    '3/8': 14,
+    '1/2': 8,
+    '5/8': 5,
+    '1/4': 30
+};
+
 // Referencias de elementos de VENTA / COTIZACION / POLLITOS
 const listaProductosVendidos = document.getElementById('lista-productos-vendidos');
 const totalPagar = document.getElementById('total-pagar');
@@ -253,34 +265,32 @@ function convertirLongitud(unidadOrigen, valorString) {
  */
 function convertirPeso(unidadOrigen, valorString) {
     const valor = parseFloat(valorString);
+    const kgIn = document.getElementById('kg-input');
+    const lbIn = document.getElementById('lb-input');
+    const arrobaIn = document.getElementById('arroba-input');
+    const quintalIn = document.getElementById('quintal-input');
+    const tonIn = document.getElementById('ton-input');
+
     if (isNaN(valor) || valorString.trim() === '') {
-        kgInput.value = '';
-        lbInput.value = '';
-        quintalInput.value = '';
+        [kgIn, lbIn, arrobaIn, quintalIn, tonIn].forEach(i => i.value = '');
         return;
     }
 
     let valorEnKg = 0;
-
-    // 1. Convertir a la unidad base (Kilogramos)
     switch (unidadOrigen) {
-        case 'kg':
-            valorEnKg = valor;
-            break;
-        case 'libra':
-            valorEnKg = valor * FACTOR_LIBRA_A_KG;
-            break;
-        case 'quintal':
-            valorEnKg = valor * FACTOR_QUINTAL_A_KG;
-            break;
+        case 'kg': valorEnKg = valor; break;
+        case 'libra': valorEnKg = valor * FACTOR_LIBRA_A_KG; break;
+        case 'arroba': valorEnKg = valor * FACTOR_ARROBA_A_KG; break;
+        case 'quintal': valorEnKg = valor * FACTOR_QUINTAL_A_KG; break;
+        case 'ton': valorEnKg = valor * FACTOR_TONELADA_A_KG; break;
     }
 
-    // 2. Convertir la unidad base (Kilogramos) a todas las demás
-    const toFixed = 4;
-
-    if (unidadOrigen !== 'kg') kgInput.value = valorEnKg.toFixed(toFixed);
-    if (unidadOrigen !== 'libra') lbInput.value = (valorEnKg / FACTOR_LIBRA_A_KG).toFixed(toFixed);
-    if (unidadOrigen !== 'quintal') quintalInput.value = (valorEnKg / FACTOR_QUINTAL_A_KG).toFixed(toFixed);
+    const toFixed = 2;
+    if (unidadOrigen !== 'kg') kgIn.value = valorEnKg.toFixed(toFixed);
+    if (unidadOrigen !== 'libra') lbIn.value = (valorEnKg / FACTOR_LIBRA_A_KG).toFixed(toFixed);
+    if (unidadOrigen !== 'arroba') arrobaIn.value = (valorEnKg / FACTOR_ARROBA_A_KG).toFixed(toFixed);
+    if (unidadOrigen !== 'quintal') quintalIn.value = (valorEnKg / FACTOR_QUINTAL_A_KG).toFixed(toFixed);
+    if (unidadOrigen !== 'ton') tonIn.value = (valorEnKg / FACTOR_TONELADA_A_KG).toFixed(toFixed);
 }
 
 /**
@@ -290,68 +300,96 @@ function convertirPeso(unidadOrigen, valorString) {
  */
 function convertirVolumen(unidadOrigen, valorString) {
     const valor = parseFloat(valorString);
+    const litroIn = document.getElementById('litro-input');
+    const galonIn = document.getElementById('galon-input');
+    const barrilIn = document.getElementById('barril-input');
+
     if (isNaN(valor) || valorString.trim() === '') {
-        litroInput.value = '';
-        galonInput.value = '';
+        litroIn.value = ''; galonIn.value = ''; barrilIn.value = '';
         return;
     }
 
     let valorEnLitros = 0;
-
-    // 1. Convertir a la unidad base (Litros)
     switch (unidadOrigen) {
-        case 'litro':
-            valorEnLitros = valor;
-            break;
-        case 'galon':
-            valorEnLitros = valor * FACTOR_GALON_A_LITRO;
-            break;
+        case 'litro': valorEnLitros = valor; break;
+        case 'galon': valorEnLitros = valor * FACTOR_GALON_A_LITRO; break;
+        case 'barril': valorEnLitros = valor * FACTOR_BARRIL_A_LITRO; break;
     }
 
-    // 2. Convertir la unidad base (Litros) a todas las demás
-    const toFixed = 4;
-
-    if (unidadOrigen !== 'litro') litroInput.value = valorEnLitros.toFixed(toFixed);
-    if (unidadOrigen !== 'galon') galonInput.value = (valorEnLitros / FACTOR_GALON_A_LITRO).toFixed(toFixed);
+    const toFixed = 2;
+    if (unidadOrigen !== 'litro') litroIn.value = valorEnLitros.toFixed(toFixed);
+    if (unidadOrigen !== 'galon') galonIn.value = (valorEnLitros / FACTOR_GALON_A_LITRO).toFixed(toFixed);
+    if (unidadOrigen !== 'barril') barrilIn.value = (valorEnLitros / FACTOR_BARRIL_A_LITRO).toFixed(toFixed);
 }
 
 
 /**
  * Calcula el aceite STIHL requerido en ML basándose en el combustible y su unidad.
  */
+/**
+ * Calcula el aceite STIHL requerido. 
+ * Se asegura de usar la unidad seleccionada y el factor de 76ml por galón.
+ */
 function calcularStihl() {
-    const cantidadCombustible = parseFloat(stihlCombustibleInput.value);
-    const unidad = stihlUnidadSelect.value;
-    
-    if (isNaN(cantidadCombustible) || cantidadCombustible <= 0) {
-        stihlAceiteML.textContent = '0.00 ml';
+    const combustibleInput = document.getElementById('stihl-combustible-input');
+    const unidadSelect = document.getElementById('stihl-unidad');
+    const resultadoDisplay = document.getElementById('stihl-aceite-ml');
+
+    const cantidad = parseFloat(combustibleInput.value);
+    const unidad = unidadSelect.value;
+
+    if (isNaN(cantidad) || cantidad <= 0) {
+        resultadoDisplay.textContent = '0.00 ml';
         return;
     }
 
-    let galonesBase = 0;
-
-    // 1. Convertir la cantidad de combustible a la unidad base (Galones)
-    switch (unidad) {
-        case 'galon':
-            galonesBase = cantidadCombustible;
-            break;
-        case 'litro':
-            // Litros a Galones
-            galonesBase = cantidadCombustible / FACTOR_GALON_A_LITRO; 
-            break;
-        case 'ml':
-            // Mililitros a Litros, luego a Galones
-            const litros = cantidadCombustible / 1000;
-            galonesBase = litros / FACTOR_GALON_A_LITRO;
-            break;
+    let galones = 0;
+    if (unidad === 'galon') {
+        galones = cantidad;
+    } else {
+        // Usamos el factor inverso: Litros / 3.78541
+        galones = cantidad / FACTOR_GALON_A_LITRO;
     }
-    
-    // 2. Aplicar la relación de mezcla: 76 ml de aceite por 1 galón
-    const aceiteRequeridoML = galonesBase * RELACION_STIHL_ML_POR_GALON;
 
-    stihlAceiteML.textContent = `${aceiteRequeridoML.toFixed(2)} ml`;
+    const aceiteMl = galones * RELACION_STIHL_ML_POR_GALON;
+    resultadoDisplay.textContent = aceiteMl.toFixed(2) + ' ml';
 }
 
+/**
+ * Convierte cantidad de varillas de hierro a quintales (qq).
+ */
+/**
+ * Convierte Hierro bidireccionalmente
+ * @param {string} medida - '3/8', '1/2', etc.
+ * @param {string} tipo - 'v' para varillas, 'q' para quintales
+ * @param {string} valorString - el numero ingresado
+ */
+/**
+ * Convierte Hierro bidireccionalmente entre Varillas y Quintales.
+ */
+function convertirHierro(medida, tipo, valorString) {
+    const valor = parseFloat(valorString);
+    // Quitamos la barra para que coincida con los IDs (ej: 3/8 -> 38)
+    const idSufijo = medida.replace('/', ''); 
+    const inputVarillas = document.getElementById(`h-${idSufijo}-v`);
+    const inputQuintales = document.getElementById(`h-${idSufijo}-q`);
+
+    if (isNaN(valor) || valorString.trim() === '') {
+        inputVarillas.value = '';
+        inputQuintales.value = '';
+        return;
+    }
+
+    const tasa = HIERRO_TASAS[medida];
+
+    if (tipo === 'v') {
+        // Entrada fue varillas -> calcular quintales
+        inputQuintales.value = (valor / tasa).toFixed(2);
+    } else {
+        // Entrada fue quintales -> calcular varillas
+        inputVarillas.value = (valor * tasa).toFixed(2);
+    }
+}
 
 // --- Lógica de Venta / Reserva / Cotización (Mantenida) ---
 
