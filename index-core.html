@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PAPELITOS</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 500px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #000000;
+        }
+        h5 {
+            text-align: center;
+            color: #000000;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #5cb85c;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #4cae4c;
+        }
+        .ticket-box {
+            border-top: 2px dashed #ccc;
+            margin-top: 20px;
+            padding-top: 20px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+        }
+        .ticket-box h3 {
+            text-align: center;
+            margin-top: 0;
+        }
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            padding: 5px 0;
+        }
+        hr {
+            border: none;
+            border-top: 1px solid #eee;
+            margin: 10px 0;
+        }
+        #total-pagar {
+            font-size: 18px;
+            font-weight: bold;
+            color: #000000;
+        }
+        .restante-pagar {
+            font-size: 16px;
+            font-weight: bold;
+            color: #000000;
+        }
+        .imprimir-btn {
+            background-color: #0275d8;
+            margin-top: 20px;
+        }
+        .imprimir-btn:hover {
+            background-color: #025aa5;
+        }
+        #cliente-nombre {
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .switch-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .switch-container button {
+            width: auto;
+            display: inline-block;
+            margin: 5px;
+            background-color: #ccc;
+            color: black;
+        }
+        .switch-container button.active {
+            background-color: #5cb85c;
+            color: white;
+            font-weight: bold;
+        }
+
+        /* Estilos específicos para el conversor de medidas */
+        .conversor-group {
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            background-color: #fafafa;
+        }
+        .conversor-group h4 {
+            margin-top: 0;
+            color: #333;
+        }
+        .conversor-input-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .conversor-input-row label {
+            width: 30%;
+            margin-top: 0;
+            text-align: right;
+        }
+        .conversor-input-row input {
+            width: 70%;
+            margin: 0;
+            padding: 8px;
+            font-size: 14px;
+        }
+        .stihl-result {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #000000;
+            margin-top: 5px;
+            text-align: center;
+            border: 1px dashed #ccc;
+            padding: 10px;
+        }
+
+        /* Estilos para impresión */
+        @media print {
+            body {
+                visibility: hidden;
+            }
+            .print-area {
+                visibility: visible;
+                display: block !important;
+                position: absolute;
+                left: 0;
+                top: 0;
+            }
+            .print-copy {
+                border: 1px solid black;
+                margin-bottom: 20px;
+                padding: 10px;
+            }
+            .no-print {
+                display: none;
+            }
+            h1, label, input, button {
+                display: none;
+            }
+            .ticket-box {
+                border-top: none;
+            }
+            .ticket-simple {
+                font-family: 'Courier New', Courier, monospace;
+                font-size: 12px;
+                padding: 0;
+                margin: 0;
+            }
+            .ticket-simple h3, .ticket-simple hr {
+                display: none;
+            }
+        }
+    </style>
+    <link rel="manifest" href="manifest.json">
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(registration => {
+                        console.log('Service Worker registrado con éxito:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('Fallo el registro del Service Worker:', error);
+                    });
+            });
+        }
+    </script>
+</head>
+<body onload="setModoVenta('papelitos')">
+
+<div class="container no-print">
+    <h1>AGROSERVICIO Y FERRETERIA BUJAIDA</h1>
+    <H5 >DESARROLLADO POR ING. JEAN CARLO GARCIA</H5>
+    <div class="switch-container">
+        <button id="btn-papelitos" onclick="setModoVenta('papelitos')">Papelitos</button>
+        <button id="btn-bebidas_paletas" onclick="setModoVenta('bebidas_paletas')">Bebidas / Paletas</button>
+        <button id="btn-pollitos" onclick="setModoVenta('pollitos')">Pollitos</button>
+        <button id="btn-cotizaciones" onclick="setModoVenta('cotizaciones')">Cotizaciones</button>
+        <button id="btn-medidas" onclick="setModoVenta('medidas')">Medidas</button> </div>
+
+    <div id="venta-inputs" style="display:none;">
+        <label for="cliente">Nombre del Cliente:</label>
+        <input type="text" id="cliente" placeholder="Escriba el nombre del cliente...">
+
+        <label for="producto">Producto:</label>
+        <input type="text" id="producto" list="listaProductos" placeholder="Buscar producto...">
+        <datalist id="listaProductos"></datalist>
+        
+        <label for="cantidad">Cantidad:</label>
+        <input type="number" id="cantidad" value="1" min="1">
+        
+        <button onclick="agregarProducto()">Añadir a la venta</button>
+        
+        <div class="ticket-box">
+            <h3>Detalle de la Venta</h3>
+            <p id="cliente-nombre-placeholder" style="display:none;"></p>
+            <div id="lista-productos-vendidos">
+            </div>
+            <hr>
+            <div class="item-row">
+                <strong>Total:</strong>
+                <strong id="total-pagar">$0.00</strong>
+            </div>
+        </div>
+        <button id="imprimir-btn-venta" class="imprimir-btn" onclick="imprimirTickets()">Imprimir Ticket 🍦</button>
+    </div>
+
+    <div id="reserva-inputs" style="display:none;">
+        <label for="cliente-reserva">Nombre del Cliente y Telefono:</label>
+        <input type="text" id="cliente-reserva" placeholder="Escriba el nombre del cliente y su telefono...">
+
+        <label for="pollito-tipo">Pollito:</label>
+        <select id="pollito-tipo" onchange="calcularReserva()">
+            <option value="">-- Seleccione el tipo de pollito --</option>
+        </select>
+        
+        <label for="cantidad-reserva">Cantidad:</label>
+        <input type="number" id="cantidad-reserva" value="10" min="1" oninput="calcularReserva()">
+        
+        <label for="fecha-entrega">Fecha de entrega:</label>
+        <input type="date" id="fecha-entrega"> 
+        
+        <div class="ticket-box">
+            <h3>Detalle de la Reserva</h3>
+            <div id="detalle-reserva-item"></div>
+            <hr>
+            <div class="summary-row">
+                <strong>Total a pagar:</strong>
+                <strong id="total-reserva">$0.00</strong>
+            </div>
+            <label for="abono-reserva">Abono:</label>
+            <input type="number" id="abono-reserva" placeholder="0.00" min="0" step="0.01" oninput="calcularReserva()">
+            <hr>
+            <div class="summary-row">
+                <strong>Resta:</strong>
+                <strong id="resta-reserva" class="restante-pagar">$0.00</strong>
+            </div>
+        </div>
+        <button onclick="procesarReserva()">Reservar Pollitos 🐣</button> 
+    </div>
+
+    <div id="cotizacion-inputs" style="display:none;">
+        <label for="cotizacion-descripcion">Descripción del Artículo:</label>
+        <input type="text" id="cotizacion-descripcion" placeholder="Escriba la descripción...">
+        
+        <label for="cotizacion-precio">Precio Público:</label>
+        <input type="number" id="cotizacion-precio" placeholder="0.00" min="0" step="0.01">
+
+        <button onclick="agregarACotizacion()">Añadir a Cotización</button>
+
+        <div class="ticket-box">
+            <h3>Detalle de la Cotización</h3>
+            <div id="lista-cotizaciones-items">
+            </div>
+        </div>
+        <button id="imprimir-btn-cotizacion" class="imprimir-btn" onclick="imprimirTickets()">Imprimir Cotización ✏️</button>
+    </div>
+
+    <div id="medidas-inputs" style="display:none;">
+
+    <h2>Conversor Express de Medidas</h2>
+    
+            <div class="conversor-group">
+            <h4>Longitud</h4>
+            <div class="conversor-input-row">
+                <label for="m-input">Metros (m):</label>
+                <input type="number" id="m-input" value="" placeholder="0.00" oninput="convertirLongitud('m', this.value)">
+            </div>
+            <div class="conversor-input-row">
+                <label for="yarda-input">Yardas (yd):</label>
+                <input type="number" id="yarda-input" value="" placeholder="0.00" oninput="convertirLongitud('yarda', this.value)">
+            </div>
+            <div class="conversor-input-row">
+                <label for="vara-input">Varas (var):</label>
+                <input type="number" id="vara-input" value="" placeholder="0.00" oninput="convertirLongitud('vara', this.value)">
+            </div>
+            <div class="conversor-input-row">
+                <label for="pie-input">Pies (ft):</label>
+                <input type="number" id="pie-input" value="" placeholder="0.00" oninput="convertirLongitud('pie', this.value)">
+            </div>
+            <div class="conversor-input-row">
+                <label for="cm-input">Centímetros (cm):</label>
+                <input type="number" id="cm-input" value="" placeholder="0.00" oninput="convertirLongitud('cm', this.value)">
+            </div>
+            <div class="conversor-input-row">
+                <label for="pulgada-input">Pulgadas (in):</label>
+                <input type="number" id="pulgada-input" value="" placeholder="0.00" oninput="convertirLongitud('pulgada', this.value)">
+            </div>
+        </div>
+    
+    <div class="conversor-group">
+        <h4>Masa / Peso</h4>
+        <div class="conversor-input-row">
+            <label>Kilogramos (kg):</label>
+            <input type="number" id="kg-input" placeholder="0.00" oninput="convertirPeso('kg', this.value)">
+        </div>
+        <div class="conversor-input-row">
+            <label>Libras (lb):</label>
+            <input type="number" id="lb-input" placeholder="0.00" oninput="convertirPeso('libra', this.value)">
+        </div>
+        <div class="conversor-input-row">
+            <label>Arrobas (@):</label>
+            <input type="number" id="arroba-input" placeholder="0.00" oninput="convertirPeso('arroba', this.value)">
+        </div>
+        <div class="conversor-input-row">
+            <label>Quintales (qq):</label>
+            <input type="number" id="quintal-input" placeholder="0.00" oninput="convertirPeso('quintal', this.value)">
+        </div>
+        <div class="conversor-input-row">
+            <label>Toneladas (t):</label>
+            <input type="number" id="ton-input" placeholder="0.00" oninput="convertirPeso('ton', this.value)">
+        </div>
+    </div>
+
+    <div class="conversor-group">
+            <h4>Volumen</h4>
+            <div class="conversor-input-row">
+                <label for="litro-input">Litros (L):</label>
+                <input type="number" id="litro-input" value="" placeholder="0.00" oninput="convertirVolumen('litro', this.value)">
+            </div>
+            <div class="conversor-input-row">
+                <label for="galon-input">Galones (gal):</label>
+                <input type="number" id="galon-input" value="" placeholder="0.00" oninput="convertirVolumen('galon', this.value)">
+            </div>
+            
+            <div class="conversor-input-row">
+                <label>Barriles:</label>
+                <input type="number" id="barril-input" placeholder="0.00" oninput="convertirVolumen('barril', this.value)">
+            </div>
+    </div>
+
+    <div class="conversor-group">
+        <h4>Hierro (Varillas ↔ Quintales)</h4>
+        <div class="conversor-input-row">
+            <label>Corrugado 3/8:</label>
+            <input type="number" id="h-38-v" placeholder="Varillas" oninput="convertirHierro('3/8', 'v', this.value)">
+            <input type="number" id="h-38-q" placeholder="qq" oninput="convertirHierro('3/8', 'q', this.value)">
+        </div>
+        <div class="conversor-input-row">
+            <label>Corrugado 1/2:</label>
+            <input type="number" id="h-12-v" placeholder="Varillas" oninput="convertirHierro('1/2', 'v', this.value)">
+            <input type="number" id="h-12-q" placeholder="qq" oninput="convertirHierro('1/2', 'q', this.value)">
+        </div>
+        <div class="conversor-input-row">
+            <label>Corrugado 5/8:</label>
+            <input type="number" id="h-58-v" placeholder="Varillas" oninput="convertirHierro('5/8', 'v', this.value)">
+            <input type="number" id="h-58-q" placeholder="qq" oninput="convertirHierro('5/8', 'q', this.value)">
+        </div>
+        <div class="conversor-input-row">
+            <label>Liso 1/4:</label>
+            <input type="number" id="h-14-v" placeholder="Varillas" oninput="convertirHierro('1/4', 'v', this.value)">
+            <input type="number" id="h-14-q" placeholder="qq" oninput="convertirHierro('1/4', 'q', this.value)">
+        </div>
+    </div>
+
+        <div class="conversor-group">
+            <h4>Mezcla de Aceite STIHL (50:1)</h4>
+            <p style="text-align: center; font-size: 0.9em; margin-bottom: 10px;">Ingresa la cantidad de combustible y su unidad.</p>
+            <div class="conversor-input-row">
+                <label for="stihl-combustible-input">Combustible:</label>
+                <input type="number" id="stihl-combustible-input" value="" placeholder="0.00" oninput="calcularStihl()">
+            </div>
+            <label for="stihl-unidad">Unidad:</label>
+            <select id="stihl-unidad" onchange="calcularStihl()">
+                <option value="galon">Galones</option>
+                <option value="litro">Litros</option>
+                <option value="ml">Mililitros</option>
+            </select>
+            <label>Aceite STIHL (requerido):</label>
+            <div class="stihl-result" id="stihl-aceite-ml">0.00 ml</div>
+            <p style="text-align: center; font-size: 0.8em; margin-top: 10px;">Factor: 76 ml de aceite por 1 galón de combustible.</p>
+                        <p style="text-align: center; font-size: 0.8em; margin-top: 10px;">Desarrollado por Ing. Jean Garcia</p>
+        </div>
+    </div>
+</div>
+
+<div class="print-area" style="display:none;"></div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
